@@ -4,16 +4,12 @@ import jwt from 'jsonwebtoken';
 import nanoid from 'nanoid';
 import nodemailer from 'nodemailer';
 
-// sendgrid
 require('dotenv').config();
-// const sgMail = require("@sendgrid/mail");
-// sgMail.setApiKey(process.env.SENDGRID_KEY);
 
 export const signup = async (req, res) => {
-  console.log('HIT SIGNUP');
   try {
     // validation
-    const { name, email, password } = req.body;
+    const { name, email, password, confirm } = req.body;
     if (!name) {
       return res.json({
         error: 'Name is required',
@@ -27,6 +23,12 @@ export const signup = async (req, res) => {
     if (!password || password.length < 6) {
       return res.json({
         error: 'Password is required and should be 6 characters long',
+      });
+    }
+
+    if (password !== confirm) {
+      return res.json({
+        error: 'Password and confirm password should match',
       });
     }
     const exist = await User.findOne({ email });
@@ -50,7 +52,7 @@ export const signup = async (req, res) => {
         expiresIn: '7d',
       });
 
-      //   console.log(user);
+      // exclude password from response
       const { password, ...rest } = user._doc;
       return res.json({
         token,
@@ -61,11 +63,11 @@ export const signup = async (req, res) => {
     }
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ error: err.message });
   }
 };
 
 export const signin = async (req, res) => {
-  // console.log(req.body);
   try {
     const { email, password } = req.body;
     // check if our db has user with that email
@@ -79,7 +81,7 @@ export const signin = async (req, res) => {
     const match = await comparePassword(password, user.password);
     if (!match) {
       return res.json({
-        error: 'Wrong password',
+        error: 'Wrong Credentials',
       });
     }
     // create signed token
@@ -95,7 +97,7 @@ export const signin = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res.status(400).send('Error. Try again.');
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -103,7 +105,7 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   // find user by email
   const user = await User.findOne({ email });
-  console.log('USER ===> ', user);
+
   if (!user) {
     return res.json({ error: 'User not found' });
   }
@@ -125,7 +127,8 @@ export const forgotPassword = async (req, res) => {
     from: process.env.EMAIL_FROM,
     to: user.email,
     subject: 'Password reset code',
-    text: `<h1>Your password  reset code is: ${resetCode}</h1>`,
+
+    html: `<div style=" max-width: 700px; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; font-family: Roboto; font-weight: 600; color: #3b5998; "><span>Reset Password</span></div><div style=" padding: 1rem 0; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5; color: #141823; font-size: 17px; font-family: Roboto; "> <span>Hello ${user.email}</span> <div style="padding: 20px 0"> <span style="padding: 1.5rem 0" >It seems that you forgot your password, use this reset code in order to reset your password.</span > </div> <div style=" width: 200px; padding: 10px 15px; background: #4c649b; color: #fff; text-decoration: none; font-weight: 600; " > ${resetCode} </div> <br /></div>`,
   };
   // send email
   try {
@@ -161,5 +164,6 @@ export const resetPassword = async (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ error: err.message });
   }
 };
