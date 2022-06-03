@@ -70,11 +70,12 @@ export const signup = async (req, res) => {
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log({ email, password });
     // check if our db has user with that email
     const user = await User.findOne({ email });
     if (!user) {
       return res.json({
-        error: 'No user found',
+        error: 'Wrong Credentials',
       });
     }
     // check password
@@ -144,8 +145,10 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { email, password, resetCode } = req.body;
+
     // find user based on email and resetCode
     const user = await User.findOne({ email, resetCode });
+    console.log(user);
     // if user not found
     if (!user) {
       return res.json({ error: 'Email or reset code is invalid' });

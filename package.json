@@ -20,6 +20,7 @@
     "mongoose": "^6.0.12",
     "morgan": "^1.10.0",
     "nanoid": "^2.1.11",
-    "nodemailer": "^6.7.5"
+    "nodemailer": "^6.7.5",
+    "slugify": "^1.6.5"
   }
 }
