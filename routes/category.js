@@ -5,6 +5,7 @@ import {
   getCategories,
   updateCategory,
 } from '../controllers/category';
+import { requireAdmin, requireSignin } from '../middlewares';
 
 const router = express.Router();
 
@@ -13,6 +14,6 @@ const router = express.Router();
 router.put('/categories/:categoryId', updateCategory);
 router.delete('/categories/:categoryId', deleteCategory);
 router.get('/categories', getCategories);
-router.post('/add-category', addCategory);
+router.post('/add-category', requireSignin, requireAdmin, addCategory);
 
 export default router;
