@@ -25,7 +25,7 @@ export const addCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({});
+    const categories = await Category.find({}).sort({ createdAt: -1 });
     return res.json({ categories });
   } catch (err) {
     console.log(err);

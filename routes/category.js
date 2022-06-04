@@ -11,8 +11,18 @@ const router = express.Router();
 
 // controllers
 
-router.put('/categories/:categoryId', updateCategory);
-router.delete('/categories/:categoryId', deleteCategory);
+router.put(
+  '/categories/:categoryId',
+  requireSignin,
+  requireAdmin,
+  updateCategory
+);
+router.delete(
+  '/categories/:categoryId',
+  requireSignin,
+  requireAdmin,
+  deleteCategory
+);
 router.get('/categories', getCategories);
 router.post('/add-category', requireSignin, requireAdmin, addCategory);
 
