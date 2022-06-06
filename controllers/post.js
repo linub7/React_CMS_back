@@ -1,5 +1,6 @@
 import Post from '../models/post';
 import Category from '../models/category';
+import Media from '../models/media';
 import cloudinary from 'cloudinary';
 import slugify from 'slugify';
 
@@ -18,8 +19,34 @@ export const uploadImage = async (req, res) => {
     res.json({
       url: result.url,
     });
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const uploadImageFile = async (req, res) => {
+  try {
+    // we can't access req.body => because this is a formData
+    // but we have req.files that provided by formidable
+    const {
+      files: {
+        file: { path },
+      },
+    } = req;
+    const result = await cloudinary.v2.uploader.upload(path);
+    console.log(result);
+    const media = await Media.create({
+      url: result.url,
+      public_id: result.public_id,
+      postedBy: req.user._id,
+    });
+    console.log(media);
+    res.json({
+      media,
+    });
+  } catch (err) {
+    console.log(err);
     return res.status(500).json({ error: err.message });
   }
 };
