@@ -42,9 +42,7 @@ export const uploadImageFile = async (req, res) => {
       postedBy: req.user._id,
     });
     console.log(media);
-    res.json({
-      media,
-    });
+    res.json(media);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
@@ -54,7 +52,7 @@ export const uploadImageFile = async (req, res) => {
 export const createPost = async (req, res) => {
   try {
     const {
-      body: { title, content, categories, published },
+      body: { title, content, categories, published, featuredImage },
       user: { _id },
     } = req;
     const slug = slugify(title, { lower: true });
@@ -76,6 +74,7 @@ export const createPost = async (req, res) => {
     setTimeout(async () => {
       try {
         const post = await Post.create({
+          ...req.body,
           title,
           content,
           categories: ids,
@@ -98,6 +97,7 @@ export const getPosts = async (req, res) => {
     const posts = await Post.find()
       .populate('postedBy', '_id name')
       .populate('categories')
+      .populate('featuredImage')
       .sort({ createdAt: -1 });
     res.json({ posts });
   } catch (err) {
@@ -115,6 +115,33 @@ export const deletePost = async (req, res) => {
     if (!post) return res.status(404).json({ error: 'Post not found.' });
     await post.remove();
     res.json({ message: 'Post deleted successfully.' });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getMedia = async (req, res) => {
+  try {
+    const media = await Media.find()
+      .populate('postedBy', '_id name')
+      .sort('-createdAt');
+    res.json(media);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const removeMedia = async (req, res) => {
+  try {
+    const {
+      params: { mediaId },
+    } = req;
+    const media = await Media.findById({ _id: mediaId });
+    if (!media) return res.status(404).json({ error: 'Media not found.' });
+    await media.remove();
+    res.json({ ok: true, message: 'Media deleted successfully.' });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
