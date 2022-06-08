@@ -1,5 +1,4 @@
-
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const userSchema = new Schema(
@@ -23,15 +22,16 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      default: "Subscriber",
+      default: 'Subscriber',
     },
     image: {
-      public_id: "",
-      url: "",
+      public_id: '',
+      url: '',
     },
-    resetCode: "",
+    resetCode: '',
+    website: String,
   },
   { timestamps: true }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

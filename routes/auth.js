@@ -6,13 +6,14 @@ import {
   signup,
   currentUser,
 } from '../controllers/auth';
-import { requireAdmin, requireSignin } from '../middlewares';
+import { requireAdmin, requireSignin, requireAuthor } from '../middlewares';
 
 const router = express.Router();
 
 // controllers
 
 router.get('/current-admin', requireSignin, requireAdmin, currentUser);
+router.get('/current-author', requireSignin, requireAuthor, currentUser);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/forgot-password', forgotPassword);

@@ -35,3 +35,17 @@ export const requireAdmin = async (req, res, next) => {
     console.log(error);
   }
 };
+
+export const requireAuthor = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user.role.toString() !== 'author') {
+      return res.status(403).json({
+        error: 'Access denied! You are not an author',
+      });
+    }
+    next();
+  } catch (error) {
+    console.log(error);
+  }
+};
