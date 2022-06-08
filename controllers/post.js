@@ -106,6 +106,69 @@ export const getPosts = async (req, res) => {
   }
 };
 
+export const getSinglePost = async (req, res) => {
+  try {
+    const {
+      params: { slug },
+    } = req;
+    const post = await Post.findOne({ slug })
+      .populate('postedBy', '_id name')
+      .populate('categories', 'name slug')
+      .populate('featuredImage', 'url');
+
+    if (!post) return res.status(404).json({ error: 'Post not found.' });
+
+    res.json({ post });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const updatePost = async (req, res) => {
+  try {
+    const {
+      params: { postId },
+      body: { title, content, categories, published, featuredImage },
+    } = req;
+    const post = await Post.findById(postId);
+    if (!post) return res.json({ error: 'Post not found.' });
+
+    let ids = [];
+    for (let index = 0; index < categories.length; index++) {
+      const category = await Category.findOne({
+        name: categories[index],
+      });
+      ids.push(category._id);
+    }
+
+    const slug = slugify(title, { lower: true });
+
+    setTimeout(async () => {
+      const updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        {
+          title,
+          content,
+          categories: ids,
+          published,
+          featuredImage,
+          slug,
+        },
+        { new: true }
+      )
+        .populate('postedBy', '_id name')
+        .populate('categories', 'name slug')
+        .populate('featuredImage', 'url');
+
+      res.json({ updatedPost });
+    }, 1000);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 export const deletePost = async (req, res) => {
   try {
     const {
