@@ -1,4 +1,5 @@
 import User from '../models/user';
+import Post from '../models/post';
 import validator from 'email-validator';
 import nodemailer from 'nodemailer';
 import { hashPassword } from '../helpers/auth';
@@ -59,6 +60,40 @@ export const createUser = async (req, res) => {
         ? 'Your account details have been sent to your email, please check your inbox!'
         : null,
     });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select('-password -secret -resetCode')
+      .populate('posts')
+      .sort({ createdAt: -1 });
+
+    return res.json({ users });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const {
+      user: { _id },
+      params: { userId },
+    } = req;
+    const user = await User.findById(userId);
+    if (!user) return res.json({ error: 'User not found' });
+    if (user._id.toString() === _id.toString())
+      return res.json({ error: 'You cannot delete yourself' });
+    if (user.role === 'admin')
+      return res.json({ error: 'You cannot delete an admin' });
+    await user.remove();
+    return res.json({ message: 'User deleted Successfully', user });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });

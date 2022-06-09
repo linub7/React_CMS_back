@@ -24,6 +24,12 @@ const userSchema = new Schema(
       type: String,
       default: 'Subscriber',
     },
+    posts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Post',
+      },
+    ],
     image: {
       public_id: '',
       url: '',

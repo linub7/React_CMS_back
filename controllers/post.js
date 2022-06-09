@@ -1,4 +1,5 @@
 import Post from '../models/post';
+import User from '../models/user';
 import Category from '../models/category';
 import Media from '../models/media';
 import cloudinary from 'cloudinary';
@@ -81,6 +82,13 @@ export const createPost = async (req, res) => {
           published,
           postedBy: _id,
         });
+
+        // push the postId to user's posts array
+        await User.findByIdAndUpdate(
+          _id,
+          { $addToSet: { posts: post._id } },
+          { new: true }
+        );
         res.json({ post });
       } catch (err) {
         console.log(err);

@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get('/current-admin', requireSignin, requireAdmin, currentUser);
 router.get('/current-author', requireSignin, requireAuthor, currentUser);
+router.get('/current-subscriber', requireSignin, currentUser);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/forgot-password', forgotPassword);
