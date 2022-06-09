@@ -10,27 +10,48 @@ import {
   removeMedia,
   getSinglePost,
   updatePost,
+  getAuthorPosts,
+  getAuthorMedia,
 } from '../controllers/post';
-import { requireAdmin, requireSignin } from '../middlewares';
+import {
+  requireAdmin,
+  requireSignin,
+  canCreateAndRead,
+  canDeleteMedia,
+  canUpdateAndDeletePost,
+  requireAuthor,
+} from '../middlewares';
 
 const router = express.Router();
 
 // controllers
-router.delete('/posts/:postId', requireSignin, requireAdmin, deletePost);
-router.put('/posts/:postId', requireSignin, requireAdmin, updatePost);
+router.delete(
+  '/posts/:postId',
+  requireSignin,
+  canUpdateAndDeletePost,
+  deletePost
+);
+router.put('/posts/:postId', requireSignin, canUpdateAndDeletePost, updatePost);
 router.get('/posts/:slug', getSinglePost);
-router.post('/upload-image', requireSignin, requireAdmin, uploadImage); // we receive base64 image
 
+// we receive base64 image
+router.post('/upload-image', requireSignin, canCreateAndRead, uploadImage);
+
+// we receive formData, we need to use middleware: =>  (req.files: provided by formidable)`
 router.post(
   '/upload-image-file',
   formidable(),
   requireSignin,
-  requireAdmin,
+  canCreateAndRead,
   uploadImageFile
-); // we receive formData, we need to use middleware: =>  (req.files: provided by formidable)`
-router.post('/create-post', requireSignin, requireAdmin, createPost);
+);
+router.post('/create-post', requireSignin, canCreateAndRead, createPost);
 router.get('/posts', getPosts);
-router.get('/media', requireSignin, requireAdmin, getMedia);
-router.delete('/media/:mediaId', requireSignin, requireAdmin, removeMedia);
+router.get('/author-posts', requireSignin, requireAuthor, getAuthorPosts);
+
+// media
+router.get('/media', requireSignin, canCreateAndRead, getMedia);
+router.get('/author-media', requireSignin, canCreateAndRead, getAuthorMedia);
+router.delete('/media/:mediaId', requireSignin, canDeleteMedia, removeMedia);
 
 export default router;

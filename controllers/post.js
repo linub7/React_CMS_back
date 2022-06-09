@@ -196,6 +196,21 @@ export const getMedia = async (req, res) => {
   }
 };
 
+export const getAuthorMedia = async (req, res) => {
+  try {
+    const {
+      user: { _id },
+    } = req;
+    const media = await Media.find({ postedBy: _id })
+      .populate('postedBy', '_id name')
+      .sort('-createdAt');
+    res.json(media);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 export const removeMedia = async (req, res) => {
   try {
     const {
@@ -205,6 +220,24 @@ export const removeMedia = async (req, res) => {
     if (!media) return res.status(404).json({ error: 'Media not found.' });
     await media.remove();
     res.json({ ok: true, message: 'Media deleted successfully.' });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getAuthorPosts = async (req, res) => {
+  try {
+    const {
+      user: { _id },
+    } = req;
+    const posts = await Post.find({ postedBy: _id })
+      .populate('postedBy', '_id name')
+      .populate('categories')
+      .populate('featuredImage')
+      .sort({ createdAt: -1 });
+
+    res.json({ posts });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
