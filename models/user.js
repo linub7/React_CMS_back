@@ -31,8 +31,8 @@ const userSchema = new Schema(
       },
     ],
     image: {
-      public_id: '',
-      url: '',
+      type: Schema.Types.ObjectId,
+      ref: 'Media',
     },
     resetCode: '',
     website: String,

@@ -1,5 +1,5 @@
 import User from '../models/user';
-import Post from '../models/post';
+import Media from '../models/media';
 import validator from 'email-validator';
 import nodemailer from 'nodemailer';
 import { hashPassword } from '../helpers/auth';
@@ -71,6 +71,7 @@ export const getUsers = async (req, res) => {
     const users = await User.find({})
       .select('-password -secret -resetCode')
       .populate('posts')
+      .populate('image')
       .sort({ createdAt: -1 });
 
     return res.json({ users });
@@ -94,6 +95,66 @@ export const deleteUser = async (req, res) => {
       return res.json({ error: 'You cannot delete an admin' });
     await user.remove();
     return res.json({ message: 'User deleted Successfully', user });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getSingleUser = async (req, res) => {
+  try {
+    const {
+      params: { userId },
+    } = req;
+    const user = await User.findById(userId)
+      .select('-password -secret -resetCode')
+      .populate('image');
+    if (!user) return res.json({ error: 'User not found' });
+    return res.json({ user });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const {
+      params: { userId },
+      body: { name, email, password, role, website, image },
+    } = req;
+    const user = await User.findById(userId).populate('image');
+    if (!user) return res.json({ error: 'User not found' });
+    if (user.role === 'admin')
+      return res.json({ error: 'You cannot update an admin' });
+
+    const isValidEmail = validator.validate(email);
+    if (email && !isValidEmail) return res.json({ error: 'Email is invalid' });
+
+    const existUser = await User.findOne({ email });
+    if (existUser && existUser._id.toString() !== userId.toString()) {
+      return res.json({
+        error: `${email} is already taken. Try another email, please.`,
+      });
+    }
+
+    if (password && password.length < 6)
+      return res.json({
+        error: 'Password should be at least 6 characters',
+      });
+
+    const media = await Media.findById(image);
+    if (!media) return res.json({ error: 'Media not found' });
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = await hashPassword(password);
+    if (role) user.role = role;
+    if (website) user.website = website;
+    if (image) user.image = image;
+
+    await user.save();
+    return res.json({ message: 'User updated Successfully', user });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
