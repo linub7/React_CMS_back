@@ -20,6 +20,7 @@ import {
   canDeleteMedia,
   canUpdateAndDeletePost,
   requireAuthor,
+  canCreateAndReadWithSubscriber,
 } from '../middlewares';
 
 const router = express.Router();
@@ -42,7 +43,7 @@ router.post(
   '/upload-image-file',
   formidable(),
   requireSignin,
-  canCreateAndRead,
+  canCreateAndReadWithSubscriber,
   uploadImageFile
 );
 router.post('/create-post', requireSignin, canCreateAndRead, createPost);

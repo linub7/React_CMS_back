@@ -123,7 +123,9 @@ export const updateUserByAdmin = async (req, res) => {
       params: { userId },
       body: { name, email, password, role, website, image },
     } = req;
-    const user = await User.findById(userId).populate('image');
+    const user = await User.findById(userId)
+      .populate('image')
+      .select('-password -resetCode');
     if (!user) return res.json({ error: 'User not found' });
     if (user.role === 'admin')
       return res.json({ error: 'You cannot update an admin' });
@@ -151,9 +153,72 @@ export const updateUserByAdmin = async (req, res) => {
     if (password) user.password = await hashPassword(password);
     if (role) user.role = role;
     if (website) user.website = website;
-    if (image) user.image = image;
+    if (image) user.image = media;
 
     await user.save();
+    return res.json({ message: 'User updated Successfully', user });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const {
+      user: { _id },
+    } = req;
+
+    const user = await User.findOne({ _id: _id.toString() })
+      .select('-password -secret -resetCode')
+      .populate('image')
+      .populate('posts');
+    if (!user) return res.json({ error: 'User not found' });
+    return res.json({ user });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const updateUserByHimselfOrHerself = async (req, res) => {
+  try {
+    const {
+      user: { _id },
+      body: { name, email, password, role, website, image },
+    } = req;
+    const user = await User.findOne({ _id })
+      .populate('image')
+      .select('-password -resetCode');
+    if (!user) return res.json({ error: 'User not found' });
+
+    const isValidEmail = validator.validate(email);
+    if (email && !isValidEmail) return res.json({ error: 'Email is invalid' });
+
+    const existUser = await User.findOne({ email });
+    if (existUser && existUser._id.toString() !== _id.toString()) {
+      return res.json({
+        error: `${email} is already taken. Try another email, please.`,
+      });
+    }
+
+    if (password && password.length < 6)
+      return res.json({
+        error: 'Password should be at least 6 characters',
+      });
+
+    const media = await Media.findById(image);
+    if (!media) return res.json({ error: 'Media not found' });
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = await hashPassword(password);
+    if (role) user.role = role;
+    if (website) user.website = website;
+    if (image) user.image = media;
+
+    await user.save();
+
     return res.json({ message: 'User updated Successfully', user });
   } catch (err) {
     console.log(err);

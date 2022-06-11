@@ -71,6 +71,28 @@ export const canCreateAndRead = async (req, res, next) => {
   }
 };
 
+export const canCreateAndReadWithSubscriber = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    switch (user.role) {
+      case 'admin':
+        next();
+        break;
+      case 'author':
+        next();
+        break;
+      case 'Subscriber':
+        next();
+        break;
+
+      default:
+        return res.status(403).json({ error: 'UnAuthorized' });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const canUpdateAndDeletePost = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);

@@ -5,6 +5,8 @@ import {
   deleteUser,
   getSingleUser,
   updateUserByAdmin,
+  getMe,
+  updateUserByHimselfOrHerself,
 } from '../controllers/user';
 import { requireAdmin, requireSignin } from '../middlewares';
 
@@ -17,5 +19,7 @@ router.get('/users/:userId', requireSignin, requireAdmin, getSingleUser);
 router.put('/users/:userId', requireSignin, requireAdmin, updateUserByAdmin);
 router.post('/users', requireSignin, requireAdmin, createUser);
 router.get('/users', requireSignin, getUsers);
+router.get('/me', requireSignin, getMe);
+router.put('/edit/me', requireSignin, updateUserByHimselfOrHerself);
 
 export default router;
