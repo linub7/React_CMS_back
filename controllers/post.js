@@ -102,10 +102,26 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page, 10) || 1;
+
+    const perPage = 5;
     const posts = await Post.find()
+      .skip((page - 1) * perPage)
       .populate('postedBy', '_id name')
       .populate('categories')
       .populate('featuredImage')
+      .sort({ createdAt: -1 })
+      .limit(perPage);
+    res.json({ posts });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+export const getPostsForAdmin = async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .select('title slug _id')
       .sort({ createdAt: -1 });
     res.json({ posts });
   } catch (err) {
@@ -246,6 +262,16 @@ export const getAuthorPosts = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json({ posts });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const postCount = async (req, res) => {
+  try {
+    const count = await Post.countDocuments();
+    res.json({ count });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });

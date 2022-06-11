@@ -12,6 +12,8 @@ import {
   updatePost,
   getAuthorPosts,
   getAuthorMedia,
+  postCount,
+  getPostsForAdmin,
 } from '../controllers/post';
 import {
   requireAdmin,
@@ -47,7 +49,9 @@ router.post(
   uploadImageFile
 );
 router.post('/create-post', requireSignin, canCreateAndRead, createPost);
-router.get('/posts', getPosts);
+router.get('/all-posts', getPosts);
+router.get('/posts-for-admin', requireSignin, requireAdmin, getPostsForAdmin);
+router.get('/posts-count', postCount);
 router.get('/author-posts', requireSignin, requireAuthor, getAuthorPosts);
 
 // media
