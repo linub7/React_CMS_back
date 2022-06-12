@@ -1,4 +1,5 @@
 import User from '../models/user';
+import Media from '../models/media';
 import { hashPassword, comparePassword } from '../helpers/auth';
 import jwt from 'jsonwebtoken';
 import nanoid from 'nanoid';
@@ -70,9 +71,9 @@ export const signup = async (req, res) => {
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log({ email, password });
+
     // check if our db has user with that email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('image', 'url');
     if (!user) {
       return res.json({
         error: 'Wrong Credentials',
@@ -92,6 +93,10 @@ export const signin = async (req, res) => {
 
     user.password = undefined;
     user.secret = undefined;
+
+    const media = await Media.findOne({ _id: user.image }).select('url');
+    console.log(media);
+
     res.json({
       token,
       user,

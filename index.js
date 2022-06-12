@@ -2,12 +2,12 @@ require('dotenv').config();
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import { readdirSync } from 'fs';
 
 import authRoutes from './routes/auth';
 import categoryRoutes from './routes/category';
 import postRoutes from './routes/post';
 import userRoutes from './routes/user';
+import commentRoutes from './routes/comment';
 
 const morgan = require('morgan');
 
@@ -30,6 +30,7 @@ app.use('/api/v1', authRoutes);
 app.use('/api/v1', categoryRoutes);
 app.use('/api/v1', postRoutes);
 app.use('/api/v1', userRoutes);
+app.use('/api/v1', commentRoutes);
 
 const PORT = process.env.PORT || 8000;
 

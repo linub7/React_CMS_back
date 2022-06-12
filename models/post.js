@@ -21,6 +21,12 @@ const postSchema = new Schema(
         ref: 'Category',
       },
     ],
+    comments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+      },
+    ],
     published: {
       type: Boolean,
       default: true,
