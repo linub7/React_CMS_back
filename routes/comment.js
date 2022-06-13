@@ -8,6 +8,8 @@ import {
   deleteCommentByAdmin,
   updateCommentByAdmin,
   getCommentsByUser,
+  getCommentsCountByUser,
+  deleteCommentByUser,
 } from '../controllers/comment';
 
 import { requireAdmin, requireSignin } from '../middlewares';
@@ -40,5 +42,7 @@ router.get(
 );
 
 router.get('/user-comments', requireSignin, getCommentsByUser);
+router.delete('/user-comments/:commentId', requireSignin, deleteCommentByUser);
+router.get('/user-comments-count', requireSignin, getCommentsCountByUser);
 
 export default router;

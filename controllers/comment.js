@@ -85,17 +85,11 @@ export const updateComment = async (req, res) => {
 
 export const getCommentsByAdmin = async (req, res) => {
   try {
-    let {
-      query: { page },
-    } = req;
-    const perPage = 6;
-    page = parseInt(page, 10) || 1;
     const comments = await Comment.find()
       .populate('postedBy', 'name')
       .populate('post', 'title slug')
-      .skip((page - 1) * perPage)
-      .sort({ createdAt: -1 })
-      .limit(perPage);
+      .sort({ createdAt: -1 });
+
     return res.json({ comments });
   } catch (err) {
     console.log(err);
@@ -152,15 +146,63 @@ export const getTotalCommentsByAdmin = async (req, res) => {
 
 export const getCommentsByUser = async (req, res) => {
   try {
+    let {
+      user: { _id },
+      query: { page },
+    } = req;
+
+    page = parseInt(page, 10) || 1;
+    const perPage = 4;
+
+    const comments = await Comment.find({ postedBy: _id })
+      .skip((page - 1) * perPage)
+      .populate('post', 'title slug')
+      .populate('postedBy', 'name')
+      .sort({ createdAt: -1 })
+      .limit(perPage);
+
+    return res.json({ comments });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getCommentsCountByUser = async (req, res) => {
+  try {
     const {
       user: { _id },
     } = req;
-    const comments = await Comment.find({ postedBy: _id })
-      .populate('post', 'title slug')
-      .populate('postedBy', 'name')
-      .sort({ createdAt: -1 });
+    const count = await Comment.countDocuments({ postedBy: _id });
+    res.json({ count });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
 
-    return res.json({ comments });
+export const deleteCommentByUser = async (req, res) => {
+  try {
+    const {
+      params: { commentId },
+      user: { _id },
+    } = req;
+    const comment = await Comment.findById(commentId);
+    if (!comment) return res.json({ error: 'Comment not found.' });
+    if (comment.postedBy._id.toString() !== _id.toString())
+      return res.json({ error: 'You are not authorized.' });
+
+    const post = await Post.findOne(comment.post);
+    console.log('BEFORE: ', post.comments);
+    post.comments = post.comments.filter(
+      (id) => id.toString() !== comment._id.toString()
+    );
+
+    await comment.remove();
+    await post.save();
+    console.log('AFTER: ', post.comments);
+
+    return res.json({ message: 'Comment deleted successfully.', comment });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
