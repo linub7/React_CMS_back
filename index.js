@@ -8,6 +8,7 @@ import categoryRoutes from './routes/category';
 import postRoutes from './routes/post';
 import userRoutes from './routes/user';
 import commentRoutes from './routes/comment';
+import websiteRoutes from './routes/website';
 
 const morgan = require('morgan');
 
@@ -31,6 +32,7 @@ app.use('/api/v1', categoryRoutes);
 app.use('/api/v1', postRoutes);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', commentRoutes);
+app.use('/api/v1', websiteRoutes);
 
 const PORT = process.env.PORT || 8000;
 

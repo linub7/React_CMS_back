@@ -122,7 +122,8 @@ export const getPosts = async (req, res) => {
 export const getPostsForAdmin = async (req, res) => {
   try {
     const posts = await Post.find()
-      .select('title slug _id')
+      .populate('postedBy', '_id name')
+      .select('title slug postedBy')
       .sort({ createdAt: -1 });
     res.json({ posts });
   } catch (err) {
