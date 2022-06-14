@@ -309,11 +309,14 @@ export const getPostsByCategory = async (req, res) => {
     const posts = await Post.find({ categories: category._id })
       .populate('categories')
       .populate('featuredImage', 'url')
-      .select('title slug content categories featuredImage')
+      .populate('postedBy', '_id name')
+      .select(
+        'title slug content categories featuredImage comments createdAt postedBy'
+      )
       .sort({ createdAt: -1 })
       .limit(20);
 
-    res.json({ posts });
+    res.json({ posts, category });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
