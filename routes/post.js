@@ -14,6 +14,7 @@ import {
   getAuthorMedia,
   postCount,
   getPostsForAdmin,
+  getPostsByCategory,
 } from '../controllers/post';
 import {
   requireAdmin,
@@ -58,5 +59,6 @@ router.get('/author-posts', requireSignin, requireAuthor, getAuthorPosts);
 router.get('/media', requireSignin, canCreateAndRead, getMedia);
 router.get('/author-media', requireSignin, canCreateAndRead, getAuthorMedia);
 router.delete('/media/:mediaId', requireSignin, canDeleteMedia, removeMedia);
+router.get('/posts-by-category/:categorySlug', getPostsByCategory);
 
 export default router;

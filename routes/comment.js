@@ -10,6 +10,7 @@ import {
   getCommentsByUser,
   getCommentsCountByUser,
   deleteCommentByUser,
+  getPostComments,
 } from '../controllers/comment';
 
 import { requireAdmin, requireSignin } from '../middlewares';
@@ -44,5 +45,6 @@ router.get(
 router.get('/user-comments', requireSignin, getCommentsByUser);
 router.delete('/user-comments/:commentId', requireSignin, deleteCommentByUser);
 router.get('/user-comments-count', requireSignin, getCommentsCountByUser);
+router.get('/comments/:postId', getPostComments);
 
 export default router;

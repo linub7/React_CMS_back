@@ -144,22 +144,22 @@ export const getSinglePost = async (req, res) => {
 
     if (!post) return res.status(404).json({ error: 'Post not found.' });
     //comments
-    let comments = await Comment.find({ post: post._id })
-      .populate('postedBy', '_id name')
-      .sort({ createdAt: -1 });
+    // let comments = await Comment.find({ post: post._id })
+    //   .populate('postedBy', '_id name')
+    //   .sort({ createdAt: -1 });
 
-    for (let index = 0; index < comments.length; index++) {
-      const comment = comments[index];
-      // const image = await Media.findOne({ postedBy: comment.postedBy._id });
-      const user = await User.findOne({ _id: comment.postedBy._id })
-        .populate('image', 'url')
-        .select('name role image');
-      comment.postedBy.image = user.image;
-      comments[index] = comment;
-    }
+    // for (let index = 0; index < comments.length; index++) {
+    //   const comment = comments[index];
+    //   // const image = await Media.findOne({ postedBy: comment.postedBy._id });
+    //   const user = await User.findOne({ _id: comment.postedBy._id })
+    //     .populate('image', 'url')
+    //     .select('name role image');
+    //   comment.postedBy.image = user.image;
+    //   comments[index] = comment;
+    // }
 
     setTimeout(() => {
-      res.json({ post, comments });
+      res.json({ post, comments: [] });
     }, 1000);
   } catch (err) {
     console.log(err);
@@ -290,6 +290,30 @@ export const postCount = async (req, res) => {
   try {
     const count = await Post.countDocuments();
     res.json({ count });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getPostsByCategory = async (req, res) => {
+  try {
+    const {
+      params: { categorySlug },
+    } = req;
+
+    const category = await Category.findOne({ slug: categorySlug });
+    if (!category)
+      return res.status(404).json({ error: 'Category not found.' });
+
+    const posts = await Post.find({ categories: category._id })
+      .populate('categories')
+      .populate('featuredImage', 'url')
+      .select('title slug content categories featuredImage')
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    res.json({ posts });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });

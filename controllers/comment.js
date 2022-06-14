@@ -1,4 +1,5 @@
 import Post from '../models/post';
+import User from '../models/user';
 import Comment from '../models/comment';
 export const createComment = async (req, res) => {
   try {
@@ -203,6 +204,40 @@ export const deleteCommentByUser = async (req, res) => {
     console.log('AFTER: ', post.comments);
 
     return res.json({ message: 'Comment deleted successfully.', comment });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getPostComments = async (req, res) => {
+  try {
+    const {
+      params: { postId },
+    } = req;
+
+    const post = await Post.findById(postId);
+    if (!post) return res.json({ error: 'Post not found.' });
+
+    // comments;
+    let comments = await Comment.find({ post: post._id })
+      .populate('postedBy', '_id name')
+      .select('-post')
+      .sort({ createdAt: -1 });
+
+    for (let index = 0; index < comments.length; index++) {
+      const comment = comments[index];
+      // const image = await Media.findOne({ postedBy: comment.postedBy._id });
+      const user = await User.findOne({ _id: comment.postedBy._id })
+        .populate('image', 'url')
+        .select('name role image');
+      comment.postedBy.image = user.image;
+      comments[index] = comment;
+    }
+
+    setTimeout(() => {
+      return res.json({ comments });
+    }, 1000);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
