@@ -1,3 +1,4 @@
+import Website from '../models/website';
 import nodemailer from 'nodemailer';
 import validator from 'email-validator';
 
@@ -31,6 +32,43 @@ export const contact = async (req, res) => {
 
     await transporter.sendMail(emailData);
     res.json({ ok: true });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const createPage = async (req, res) => {
+  try {
+    const {
+      body: { page, title, subtitle, fullWidthImage },
+    } = req;
+
+    const found = await Website.findOne({ page });
+    if (found) {
+      found.title = title;
+      found.subtitle = subtitle;
+      found.fullWidthImage = fullWidthImage;
+      await found.save();
+      return res.json({ found });
+    } else {
+      const created = await Website.create(req.body);
+      return res.json({ created });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getPage = async (req, res) => {
+  try {
+    const {
+      query: { page },
+    } = req;
+
+    const found = await Website.findOne({ page }).populate('fullWidthImage');
+    res.json({ found });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: err.message });
