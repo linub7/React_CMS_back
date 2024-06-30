@@ -122,10 +122,11 @@ export const forgotPassword = async (req, res) => {
   user.save();
   // prepare email
   const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE,
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
     auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.SMTP_USER, // generated ethereal user
+      pass: process.env.SMTP_PASSWORD, // generated ethereal password
     },
   });
 
